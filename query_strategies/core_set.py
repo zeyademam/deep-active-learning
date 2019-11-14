@@ -55,8 +55,9 @@ class CoreSet(Strategy):
 
 		pickle.dump((xx.tolist(), yy.tolist(), dd.tolist(), subset, float(opt), n, self.n_pool), open('mip{}.pkl'.format(SEED), 'wb'), 2)
 
-		import ipdb
-		ipdb.set_trace()
+		# import ipdb
+		# ipdb.set_trace()
+
 		# solving MIP
 		# download Gurobi software from http://www.gurobi.com/
 		# sh {GUROBI_HOME}/linux64/bin/gurobi.sh < core_set_sovle_solve.py

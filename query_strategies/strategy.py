@@ -4,6 +4,8 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
+from model import init_params
+
 class Strategy:
     def __init__(self, X, Y, idxs_lb, net, handler, args):
         self.X = X
@@ -34,7 +36,9 @@ class Strategy:
 
     def train(self):
         n_epoch = self.args['n_epoch']
-        self.clf = self.net().to(self.device)
+        self.net.apply(init_params)
+        self.clf = self.net.to(self.device)
+
         optimizer = optim.SGD(self.clf.parameters(), **self.args['optimizer_args'])
 
         idxs_train = np.arange(self.n_pool)[self.idxs_lb]

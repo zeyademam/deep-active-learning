@@ -12,3 +12,4 @@ from .core_set import CoreSet
 from .adversarial_bim import AdversarialBIM
 from .adversarial_deepfool import AdversarialDeepFool
 from .active_learning_by_learning import ActiveLearningByLearning
+from .random_network_distillation import RandomNetworkDistillation
