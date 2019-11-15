@@ -18,6 +18,8 @@ class RandomNetworkDistillation(Strategy):
                                                         args)
         self.target_net = EmbeddingNet().to(self.device)
         self.predictor_net = EmbeddingNet().to(self.device)
+        self.target_net.apply(init_params)
+        self.predictor_net.apply(init_params)
         self.target_net.eval() # Sets the target network to eval mode
 
         # Make sure parameters of target model are not updated during training
@@ -25,9 +27,7 @@ class RandomNetworkDistillation(Strategy):
             p.requires_grad = False
 
     def query(self, n):
-        # Reset weights of target and predictor nets
-        self.target_net.apply(init_params)
-        self.predictor_net.apply(init_params)
+        # TODO: Consider resetting weights of target and predictor nets
 
         # Train predictor on labeled data with target outputs as labels
         self.train_predictor()
@@ -66,10 +66,14 @@ class RandomNetworkDistillation(Strategy):
 
     def train_predictor(self):
         # Train predictor network on already labeled data
-        n_epoch = self.args['n_epoch']
+        # First round tains for n_epochs, afterwards trains for less epochs
+        if self.round == 1:
+            n_epoch = self.args['n_epoch']
+        else:
+            n_epoch = self.args['n_epoch_distill']
         idxs_train = np.arange(self.n_pool)[self.idxs_lb]
-        optimizer = optim.SGD(self.predictor_net.parameters(),
-                              **self.args['optimizer_args'])
+        optimizer = optim.Adam(self.predictor_net.parameters(),
+                               **self.args['distill_optimizer_args'])
         loader_tr = DataLoader(
             self.handler(self.X[idxs_train], self.Y[idxs_train],
                          transform=self.args['transform']),

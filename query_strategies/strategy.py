@@ -17,6 +17,8 @@ class Strategy:
         self.n_pool = len(Y)
         use_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda" if use_cuda else "cpu")
+        # Current Round
+        self.round = 0
 
     def query(self, n):
         pass
@@ -39,11 +41,12 @@ class Strategy:
         self.net.apply(init_params)
         self.clf = self.net.to(self.device)
 
-        optimizer = optim.SGD(self.clf.parameters(), **self.args['optimizer_args'])
+        optimizer = optim.Adam(self.clf.parameters(), **self.args['optimizer_args'])
 
         idxs_train = np.arange(self.n_pool)[self.idxs_lb]
         loader_tr = DataLoader(self.handler(self.X[idxs_train], self.Y[idxs_train], transform=self.args['transform']),
                             shuffle=True, **self.args['loader_tr_args'])
+        print(f"The size of the training set is now {np.sum(self.idxs_lb)}")
 
         for epoch in range(1, n_epoch+1):
             self._train(epoch, loader_tr, optimizer)

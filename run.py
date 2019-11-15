@@ -25,23 +25,27 @@ args_pool = {'MNIST':
                 {'n_epoch': 10, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]),
                  'loader_tr_args': {'batch_size': 64, 'num_workers': 1},
                  'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
-                 'optimizer_args': {'lr': 0.01, 'momentum': 0.5}},
+                 'optimizer_args': {'lr': 0.01}},
             'FashionMNIST':
                 {'n_epoch': 10, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]),
                  'loader_tr_args': {'batch_size': 64, 'num_workers': 1},
                  'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
-                 'optimizer_args': {'lr': 0.01, 'momentum': 0.5}},
+                 'optimizer_args': {'lr': 0.01}},
             'SVHN':
                 {'n_epoch': 20, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970))]),
                  'loader_tr_args': {'batch_size': 64, 'num_workers': 1},
                  'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
-                 'optimizer_args': {'lr': 0.01, 'momentum': 0.5}},
+                 'optimizer_args': {'lr': 0.01}},
             'CIFAR10':
                 {'n_epoch': 20, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))]),
                  'loader_tr_args': {'batch_size': 64, 'num_workers': 1},
                  'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
-                 'optimizer_args': {'lr': 0.05, 'momentum': 0.3}}
+                 'optimizer_args': {'lr': 0.01},
+                 # Next two params for RND method
+                 'distill_optimizer_args': {'lr': 0.05},
+                 'n_epoch_distill': 5}
             }
+
 args = args_pool[DATA_NAME]
 
 # set seed
@@ -103,6 +107,7 @@ print('Round 0\ntesting accuracy {}'.format(acc[0]))
 
 for rd in range(1, NUM_ROUND+1):
     print('Round {}'.format(rd))
+    strategy.round += 1  # Update the round count (important for RND method)
 
     # query
     q_idxs = strategy.query(NUM_QUERY)
