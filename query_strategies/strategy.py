@@ -41,7 +41,8 @@ class Strategy:
         self.net.apply(init_params)
         self.clf = self.net.to(self.device)
 
-        optimizer = optim.Adam(self.clf.parameters(), **self.args['optimizer_args'])
+        optimizer = optim.RMSprop(self.clf.parameters(),
+                                  **self.args['optimizer_args'])
 
         idxs_train = np.arange(self.n_pool)[self.idxs_lb]
         loader_tr = DataLoader(self.handler(self.X[idxs_train], self.Y[idxs_train], transform=self.args['transform']),

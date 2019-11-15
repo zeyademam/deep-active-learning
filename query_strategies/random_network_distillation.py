@@ -93,3 +93,4 @@ class RandomNetworkDistillation(Strategy):
             loss = F.mse_loss(predicition, target)
             loss.backward()
             optimizer.step()
+        print(f"The Loss of the predictor at epoch {epoch}: {loss}")

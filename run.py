@@ -9,12 +9,13 @@ from query_strategies import RandomSampling, LeastConfidence, MarginSampling, \
     CoreSet, AdversarialBIM, AdversarialDeepFool, ActiveLearningByLearning, \
     RandomNetworkDistillation
 
+# TODO: add comet.ml stuff!
 # parameters
 SEED = 1
 
-NUM_INIT_LB = 10000
+NUM_INIT_LB = 5000
 NUM_QUERY = 1000
-NUM_ROUND = 10
+NUM_ROUND = 50
 
 # DATA_NAME = 'MNIST'
 # DATA_NAME = 'FashionMNIST'
@@ -37,12 +38,12 @@ args_pool = {'MNIST':
                  'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
                  'optimizer_args': {'lr': 0.01}},
             'CIFAR10':
-                {'n_epoch': 20, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))]),
+                {'n_epoch': 40, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))]),
                  'loader_tr_args': {'batch_size': 64, 'num_workers': 1},
                  'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
-                 'optimizer_args': {'lr': 0.01},
+                 'optimizer_args': {'lr': 0.001, 'weight_decay': 5e-4},
                  # Next two params for RND method
-                 'distill_optimizer_args': {'lr': 0.05},
+                 'distill_optimizer_args': {'lr': 0.01},
                  'n_epoch_distill': 5}
             }
 
@@ -55,8 +56,10 @@ torch.backends.cudnn.enabled = False
 
 # load dataset
 X_tr, Y_tr, X_te, Y_te = get_dataset(DATA_NAME)
-X_tr = X_tr[:40000]
-Y_tr = Y_tr[:40000]
+
+# Truncate test data for faster querying and proof of concept.
+#X_tr = X_tr[:40000]
+#Y_tr = Y_tr[:40000]
 
 # start experiment
 n_pool = len(Y_tr)

@@ -1,5 +1,21 @@
 ## Deep Active Learning
 
+### Things I've done so far
+Added Random Network distillation:
+- Fixed target network with random initial weights.
+- Fixed prediction network. On first iteration, trains for same number of 
+epochs as target. On subsequent iterations it is fine-tuned 
+(not trained from scratch) for a few epochs as specified in args.
+
+TODO:
+- Add comet support (and save important things)
+- Right now things only work for CIFAR10 need to adapt for other datasets
+- Test different combinations of target/predictor initializations and
+training routines. Does target need to fixed? How can I make sure predictor
+"knows" what data is already labeled so as to avoid introducing class 
+imbalances etc..
+- Is MSE loss between target and predictor the best way?
+
 Python implementations of the following active learning algorithms:
 
 - Random Sampling
