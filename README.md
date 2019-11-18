@@ -6,14 +6,25 @@ Added Random Network distillation:
 - Fixed prediction network. On first iteration, trains for same number of 
 epochs as target. On subsequent iterations it is fine-tuned 
 (not trained from scratch) for a few epochs as specified in args.
+- The predictor is trained to minimize the MSE loss between its output and 
+the target’s output on the already labeled data. After training it I compute 
+the loss on the unlabeled data,  data-points on which the mse loss is largest 
+are selected for labeling and added to the training set for the next round. 
+And I am only fine-tuning the predictor at each round (i.e. not retraining it 
+from scratch).
+
+- Meeting notes with Tom: Split unlabeled data into train/"test".
+Train predictor on labeled data then sample train data one at a time.
+Train using the sampled point (one or two SGD updates), then eval on the 
+"test" data (holdout set). The points that show the best improvements
+on the test data are those to be queried. 
+The Target Net should be the classifier (so that it trains 
+on the labeled data everytime.) And the predictor should also have
+the same architecture. 
 
 TODO:
-- Add comet support (and save important things)
 - Right now things only work for CIFAR10 need to adapt for other datasets
-- Test different combinations of target/predictor initializations and
-training routines. Does target need to fixed? How can I make sure predictor
-"knows" what data is already labeled so as to avoid introducing class 
-imbalances etc..
+- Try adding data augmentation?
 - Is MSE loss between target and predictor the best way?
 
 Python implementations of the following active learning algorithms:

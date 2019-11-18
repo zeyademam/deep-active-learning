@@ -1,3 +1,4 @@
+import comet_ml
 import numpy as np
 from dataset import get_dataset, get_handler
 from model import get_net
@@ -9,13 +10,18 @@ from query_strategies import RandomSampling, LeastConfidence, MarginSampling, \
     CoreSet, AdversarialBIM, AdversarialDeepFool, ActiveLearningByLearning, \
     RandomNetworkDistillation
 
-# TODO: add comet.ml stuff!
+# Create an experiment
+experiment = comet_ml.Experiment(api_key="HeINHac3m47FOiruYxgIdxFvI",
+                                 project_name="active-learning",
+                                 workspace="zeyad",
+                                 auto_metric_logging=False)
+experiment.add_tag("RND")
 # parameters
 SEED = 1
 
-NUM_INIT_LB = 5000
-NUM_QUERY = 1000
-NUM_ROUND = 50
+NUM_INIT_LB = 100
+NUM_QUERY = 100
+NUM_ROUND = 45
 
 # DATA_NAME = 'MNIST'
 # DATA_NAME = 'FashionMNIST'
@@ -24,30 +30,40 @@ DATA_NAME = 'CIFAR10'
 
 args_pool = {'MNIST':
                 {'n_epoch': 10, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]),
-                 'loader_tr_args': {'batch_size': 64, 'num_workers': 1},
+                 'loader_tr_args': {'batch_size': 128, 'num_workers': 1},
                  'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
                  'optimizer_args': {'lr': 0.01}},
+
             'FashionMNIST':
                 {'n_epoch': 10, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]),
-                 'loader_tr_args': {'batch_size': 64, 'num_workers': 1},
+                 'loader_tr_args': {'batch_size': 128, 'num_workers': 1},
                  'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
                  'optimizer_args': {'lr': 0.01}},
+
             'SVHN':
                 {'n_epoch': 20, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970))]),
-                 'loader_tr_args': {'batch_size': 64, 'num_workers': 1},
+                 'loader_tr_args': {'batch_size': 128, 'num_workers': 1},
                  'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
                  'optimizer_args': {'lr': 0.01}},
+
             'CIFAR10':
-                {'n_epoch': 40, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))]),
-                 'loader_tr_args': {'batch_size': 64, 'num_workers': 1},
+                {'n_epoch': 2, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))]),
+                 'loader_tr_args': {'batch_size': 128, 'num_workers': 1},
                  'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
-                 'optimizer_args': {'lr': 0.001, 'weight_decay': 5e-4},
+                 'optimizer_args': {'lr': 0.005, 'weight_decay': 5e-4,
+                                    'momentum': 0.9},
                  # Next two params for RND method
-                 'distill_optimizer_args': {'lr': 0.01},
-                 'n_epoch_distill': 5}
+                 'distill_optimizer_args': {'lr': 0.005, 'weight_decay': 5e-4},
+                 'n_epoch_distill': 2}
             }
 
 args = args_pool[DATA_NAME]
+# Log settings to comet_ml
+experiment.log_parameter("DATA_NAME", DATA_NAME)
+experiment.log_parameter("SEED", SEED)
+experiment.log_parameter("NUM_INIT_LB", NUM_INIT_LB)
+experiment.log_parameter("NUM_QUERY", NUM_QUERY)
+experiment.log_parameter("NUM_ROUND", NUM_ROUND)
 
 # set seed
 np.random.seed(SEED)
@@ -94,7 +110,8 @@ handler = get_handler(DATA_NAME)
 # albl_list = [MarginSampling(X_tr, Y_tr, idxs_lb, net, handler, args),
 #              KMeansSampling(X_tr, Y_tr, idxs_lb, net, handler, args)]
 # strategy = ActiveLearningByLearning(X_tr, Y_tr, idxs_lb, net, handler, args, strategy_list=albl_list, delta=0.1)
-strategy = RandomNetworkDistillation(X_tr, Y_tr, idxs_lb, net, handler, args)
+strategy = RandomNetworkDistillation(X_tr, Y_tr, idxs_lb, net, handler, args,
+                                     experiment)
 
 # print info
 print(DATA_NAME)
@@ -123,7 +140,9 @@ for rd in range(1, NUM_ROUND+1):
     # round accuracy
     P = strategy.predict(X_te, Y_te)
     acc[rd] = 1.0 * (Y_te==P).sum().item() / len(Y_te)
-    print('testing accuracy {}'.format(acc[rd]))
+    experiment.log_metric(f"{rd}_test_acc", acc[rd],
+                          include_context=False)
+    print(f'testing accuracy {acc[:rd+1]}')
 
 # print results
 print('SEED {}'.format(SEED))
