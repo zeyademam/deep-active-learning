@@ -18,6 +18,9 @@ class Strategy:
         self.n_pool = len(Y)
         use_cuda = torch.cuda.is_available()
         self.device = torch.device("cuda" if use_cuda else "cpu")
+        s = "cuda" if use_cuda else "cpu"
+
+        print(f"Using device: {s}")
         # Current Round
         self.round = 0
         self.experiment = experiment
@@ -58,8 +61,8 @@ class Strategy:
         print(f"The size of the training set is now {np.sum(self.idxs_lb)}")
 
         for epoch in range(1, n_epoch+1):
-            if self.experiment:
-                self.experiment.set_epoch(epoch)
+            #if self.experiment:
+            #    self.experiment.set_epoch(epoch)
             self._train(epoch, loader_tr, optimizer, criterion)
 
     def predict(self, X, Y):

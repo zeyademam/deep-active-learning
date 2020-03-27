@@ -17,11 +17,11 @@ experiment = comet_ml.Experiment(api_key="HeINHac3m47FOiruYxgIdxFvI",
                                  auto_metric_logging=False)
 experiment.add_tag("RND")
 # parameters
-SEED = 1
+SEED = 5
 
-NUM_INIT_LB = 100
+NUM_INIT_LB = 50000
 NUM_QUERY = 100
-NUM_ROUND = 45
+NUM_ROUND = 0  # 9
 
 # DATA_NAME = 'MNIST'
 # DATA_NAME = 'FashionMNIST'
@@ -47,14 +47,26 @@ args_pool = {'MNIST':
                  'optimizer_args': {'lr': 0.01}},
 
             'CIFAR10':
-                {'n_epoch': 2, 'transform': transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2470, 0.2435, 0.2616))]),
-                 'loader_tr_args': {'batch_size': 128, 'num_workers': 1},
-                 'loader_te_args': {'batch_size': 1000, 'num_workers': 1},
+                {'n_epoch': 50,
+                 'transform': transforms.Compose([#transforms.RandomCrop(32,
+                 #                                                        padding=4),
+                 #                                  transforms.RandomHorizontalFlip(),
+                                                   transforms.ToTensor(),
+                                                   transforms.Normalize((0.4914,
+                                                                        0.4822,
+                                                                        0.4465),
+                                                                        (0.2023,
+                                                                         0.1994,
+                                                                         0.2010)
+                                                                        )
+                                                  ]),
+                 'loader_tr_args': {'batch_size': 1024, 'num_workers': 1},
+                 'loader_te_args': {'batch_size': 1024, 'num_workers': 1},
                  'optimizer_args': {'lr': 0.005, 'weight_decay': 5e-4,
                                     'momentum': 0.9},
                  # Next two params for RND method
                  'distill_optimizer_args': {'lr': 0.005, 'weight_decay': 5e-4},
-                 'n_epoch_distill': 2}
+                 }
             }
 
 args = args_pool[DATA_NAME]
@@ -74,8 +86,8 @@ torch.backends.cudnn.enabled = False
 X_tr, Y_tr, X_te, Y_te = get_dataset(DATA_NAME)
 
 # Truncate test data for faster querying and proof of concept.
-#X_tr = X_tr[:40000]
-#Y_tr = Y_tr[:40000]
+#X_tr = X_tr[:5000]
+#Y_tr = Y_tr[:5000]
 
 # start experiment
 n_pool = len(Y_tr)
